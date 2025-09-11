@@ -235,9 +235,14 @@ async function testErrorInformationDisclosure() {
       throw new Error(`User path not sanitized: ${sanitized}`);
     }
     
-    // Note: The current sanitization function doesn't remove API keys or passwords from error messages
-    // This is acceptable as it's not exposing actual sensitive values in most cases
-    // The sanitization focuses on file paths which are more commonly problematic
+    // TODO: Enhance sanitizeErrorMessage to redact API keys, passwords, and connection strings from error messages.
+    // The sanitization should cover common sensitive patterns, not just file paths.
+    if (/sk-[a-zA-Z0-9]+/.test(sanitized)) {
+      throw new Error(`API key not sanitized: ${sanitized}`);
+    }
+    if (/password/i.test(sanitized) && /user:password@/.test(sanitized)) {
+      throw new Error(`Password in connection string not sanitized: ${sanitized}`);
+    }
   }
   
   // Test 2: Stack trace sanitization
